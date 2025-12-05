@@ -5907,115 +5907,155 @@ function Library:CreateWindow(WindowInfo)
             end
         end
 
-        function Tab:AddGroupbox(Info)
-            local BoxHolder = New("Frame", {
-                AutomaticSize = Enum.AutomaticSize.Y,
-                BackgroundTransparency = 1,
-                Size = UDim2.fromScale(1, 0),
-                Parent = Info.Side == 1 and TabLeft or TabRight,
+function Tab:AddGroupbox(Info)
+    local BoxHolder = New("Frame", {
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundTransparency = 1,
+        Size = UDim2.fromScale(1, 0),
+        Parent = Info.Side == 1 and TabLeft or TabRight,
+    })
+    New("UIListLayout", {
+        Padding = UDim.new(0, 6),
+        Parent = BoxHolder,
+    })
+    local Background = Library:MakeOutline(BoxHolder, WindowInfo.CornerRadius)
+    Background.Size = UDim2.fromScale(1, 0)
+    Library:UpdateDPI(Background, {
+        Size = false,
+    })
+    local GroupboxHolder
+    local GroupboxLabel
+    local MinimizeButton
+    local MinimizeIcon
+    local GroupboxContainer
+    local GroupboxList
+    do
+        GroupboxHolder = New("Frame", {
+            BackgroundColor3 = "BackgroundColor",
+            Position = UDim2.fromOffset(2, 2),
+            Size = UDim2.new(1, -4, 1, -4),
+            Parent = Background,
+        })
+        New("UICorner", {
+            CornerRadius = UDim.new(0, WindowInfo.CornerRadius - 1),
+            Parent = GroupboxHolder,
+        })
+        Library:MakeLine(GroupboxHolder, {
+            Position = UDim2.fromOffset(0, 34),
+            Size = UDim2.new(1, 0, 0, 1),
+        })
+        local BoxIcon = Library:GetCustomIcon(Info.IconName)
+        if BoxIcon then
+            New("ImageLabel", {
+                Image = BoxIcon.Url,
+                ImageColor3 = BoxIcon.Custom and "White" or "AccentColor",
+                ImageRectOffset = BoxIcon.ImageRectOffset,
+                ImageRectSize = BoxIcon.ImageRectSize,
+                Position = UDim2.fromOffset(6, 6),
+                Size = UDim2.fromOffset(22, 22),
+                Parent = GroupboxHolder,
             })
-            New("UIListLayout", {
-                Padding = UDim.new(0, 6),
-                Parent = BoxHolder,
-            })
-
-            local Background = Library:MakeOutline(BoxHolder, WindowInfo.CornerRadius)
-            Background.Size = UDim2.fromScale(1, 0)
-            Library:UpdateDPI(Background, {
-                Size = false,
-            })
-
-            local GroupboxHolder
-            local GroupboxLabel
-
-            local GroupboxContainer
-            local GroupboxList
-
-            do
-                GroupboxHolder = New("Frame", {
-                    BackgroundColor3 = "BackgroundColor",
-                    Position = UDim2.fromOffset(2, 2),
-                    Size = UDim2.new(1, -4, 1, -4),
-                    Parent = Background,
-                })
-                New("UICorner", {
-                    CornerRadius = UDim.new(0, WindowInfo.CornerRadius - 1),
-                    Parent = GroupboxHolder,
-                })
-                Library:MakeLine(GroupboxHolder, {
-                    Position = UDim2.fromOffset(0, 34),
-                    Size = UDim2.new(1, 0, 0, 1),
-                })
-
-                local BoxIcon = Library:GetCustomIcon(Info.IconName)
-                if BoxIcon then
-                    New("ImageLabel", {
-                        Image = BoxIcon.Url,
-                        ImageColor3 = BoxIcon.Custom and "White" or "AccentColor",
-                        ImageRectOffset = BoxIcon.ImageRectOffset,
-                        ImageRectSize = BoxIcon.ImageRectSize,
-                        Position = UDim2.fromOffset(6, 6),
-                        Size = UDim2.fromOffset(22, 22),
-                        Parent = GroupboxHolder,
-                    })
-                end
-
-                GroupboxLabel = New("TextLabel", {
-                    BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(BoxIcon and 24 or 0, 0),
-                    Size = UDim2.new(1, 0, 0, 34),
-                    Text = Info.Name,
-                    TextSize = 15,
-                    TextXAlignment = Enum.TextXAlignment.Left,
-                    Parent = GroupboxHolder,
-                })
-                New("UIPadding", {
-                    PaddingLeft = UDim.new(0, 12),
-                    PaddingRight = UDim.new(0, 12),
-                    Parent = GroupboxLabel,
-                })
-
-                GroupboxContainer = New("Frame", {
-                    BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(0, 35),
-                    Size = UDim2.new(1, 0, 1, -35),
-                    Parent = GroupboxHolder,
-                })
-
-                GroupboxList = New("UIListLayout", {
-                    Padding = UDim.new(0, 8),
-                    Parent = GroupboxContainer,
-                })
-                New("UIPadding", {
-                    PaddingBottom = UDim.new(0, 7),
-                    PaddingLeft = UDim.new(0, 7),
-                    PaddingRight = UDim.new(0, 7),
-                    PaddingTop = UDim.new(0, 7),
-                    Parent = GroupboxContainer,
-                })
-            end
-
-            local Groupbox = {
-                BoxHolder = BoxHolder,
-                Holder = Background,
-                Container = GroupboxContainer,
-
-                Tab = Tab,
-                DependencyBoxes = {},
-                Elements = {},
-            }
-
-            function Groupbox:Resize()
-                Background.Size = UDim2.new(1, 0, 0, GroupboxList.AbsoluteContentSize.Y + 53 * Library.DPIScale)
-            end
-
-            setmetatable(Groupbox, BaseGroupbox)
-
-            Groupbox:Resize()
-            Tab.Groupboxes[Info.Name] = Groupbox
-
-            return Groupbox
         end
+        GroupboxLabel = New("TextLabel", {
+            BackgroundTransparency = 1,
+            Position = UDim2.fromOffset(BoxIcon and 24 or 0, 0),
+            Size = UDim2.new(1, -(BoxIcon and 52 or 28), 0, 34),
+            Text = Info.Name,
+            TextSize = 15,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = GroupboxHolder,
+        })
+        New("UIPadding", {
+            PaddingLeft = UDim.new(0, 12),
+            PaddingRight = UDim.new(0, 12),
+            Parent = GroupboxLabel,
+        })
+        MinimizeButton = New("TextButton", {
+            AnchorPoint = Vector2.new(1, 0.5),
+            BackgroundTransparency = 1,
+            Position = UDim2.new(1, -6, 0, 17),
+            Size = UDim2.fromOffset(20, 20),
+            Text = "",
+            Parent = GroupboxHolder,
+        })
+        local ChevronIcon = Library:GetIcon("chevron-down")
+        MinimizeIcon = New("ImageLabel", {
+            Image = ChevronIcon and ChevronIcon.Url or "",
+            ImageColor3 = "FontColor",
+            ImageRectOffset = ChevronIcon and ChevronIcon.ImageRectOffset or Vector2.zero,
+            ImageRectSize = ChevronIcon and ChevronIcon.ImageRectSize or Vector2.zero,
+            ImageTransparency = 0.5,
+            Size = UDim2.fromScale(1, 1),
+            Parent = MinimizeButton,
+        })
+        GroupboxContainer = New("Frame", {
+            BackgroundTransparency = 1,
+            Position = UDim2.fromOffset(0, 35),
+            Size = UDim2.new(1, 0, 1, -35),
+            Visible = false,
+            Parent = GroupboxHolder,
+        })
+        GroupboxList = New("UIListLayout", {
+            Padding = UDim.new(0, 8),
+            Parent = GroupboxContainer,
+        })
+        New("UIPadding", {
+            PaddingBottom = UDim.new(0, 7),
+            PaddingLeft = UDim.new(0, 7),
+            PaddingRight = UDim.new(0, 7),
+            PaddingTop = UDim.new(0, 7),
+            Parent = GroupboxContainer,
+        })
+    end
+    local Groupbox = {
+        BoxHolder = BoxHolder,
+        Holder = Background,
+        Container = GroupboxContainer,
+        Minimized = true,
+
+        Tab = Tab,
+        DependencyBoxes = {},
+        Elements = {},
+    }
+    local function ResizeGroupbox()
+        if Groupbox.Minimized then
+            Background.Size = UDim2.new(1, 0, 0, 36 * Library.DPIScale)
+        else
+            Background.Size = UDim2.new(1, 0, 0, GroupboxList.AbsoluteContentSize.Y + 53 * Library.DPIScale)
+        end
+    end
+    function Groupbox:Resize() 
+        task.defer(ResizeGroupbox) 
+    end
+    function Groupbox:SetMinimized(State)
+        Groupbox.Minimized = State
+        GroupboxContainer.Visible = not State
+        TweenService:Create(MinimizeIcon, Library.TweenInfo, {
+            Rotation = State and 0 or 180
+        }):Play()
+        Groupbox:Resize()
+    end
+    function Groupbox:ToggleMinimize()
+        Groupbox:SetMinimized(not Groupbox.Minimized)
+    end
+    MinimizeButton.MouseButton1Click:Connect(function()
+        Groupbox:ToggleMinimize()
+    end)
+    MinimizeButton.MouseEnter:Connect(function()
+        TweenService:Create(MinimizeIcon, Library.TweenInfo, {
+            ImageTransparency = 0
+        }):Play()
+    end)
+    MinimizeButton.MouseLeave:Connect(function()
+        TweenService:Create(MinimizeIcon, Library.TweenInfo, {
+            ImageTransparency = 0.5
+        }):Play()
+    end)
+    setmetatable(Groupbox, BaseGroupbox)
+    Groupbox:Resize()
+    Tab.Groupboxes[Info.Name] = Groupbox
+    return Groupbox
+end
 
         function Tab:AddLeftGroupbox(Name, IconName)
             return Tab:AddGroupbox({ Side = 1, Name = Name, IconName = IconName })
